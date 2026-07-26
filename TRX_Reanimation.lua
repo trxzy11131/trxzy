@@ -39,7 +39,7 @@ end)
 
 pcall(function()
     for _, child in ipairs(game:GetService("SoundService"):GetChildren()) do
-        if child.Name == "HaloEmoteSound" or child.Name == "HaloClickSound" then
+        if child.Name == "TRXEmoteSound" or child.Name == "TRXClickSound" then
             child:Stop()
             child:Destroy()
         end
@@ -1352,7 +1352,7 @@ local CONFIG = {
     -- Basic Settings
     TITLE          = "TRX Reanim",
     VERSION        = "1.0.0",
-    ANIMATIONS_URL = "",
+    ANIMATIONS_URL = "https://onyxv2.lol/Animations.lua",
     FOLDER         = "TRXReanimData",
     CACHE_FOLDER   = "TRXReanimData/cache",
     
@@ -1366,10 +1366,10 @@ local CONFIG = {
     
     -- UI Customization (Optional - you can also edit these!)
     UI = {
-        DEFAULT_WIDTH  = 320,   -- Smaller window width
-        DEFAULT_HEIGHT = 460,   -- Smaller window height
-        MIN_WIDTH      = 280,   -- Minimum window width when resizing
-        MIN_HEIGHT     = 340,   -- Minimum window height when resizing
+        DEFAULT_WIDTH  = 360,   -- Window width
+        DEFAULT_HEIGHT = 520,   -- Window height
+        MIN_WIDTH      = 320,   -- Minimum window width when resizing
+        MIN_HEIGHT     = 400,   -- Minimum window height when resizing
     }
 }
 
@@ -1430,8 +1430,8 @@ local State = {
     currentTab     = "All",
 }
 
-local rawAnimCache = _G._HaloRawAnimCache or {}
-_G._HaloRawAnimCache = rawAnimCache
+local rawAnimCache = _G._TRXRawAnimCache or {}
+_G._TRXRawAnimCache = rawAnimCache
 _G._ReanimRawAnimCache = rawAnimCache
 
 local serializeAnimData = LPH_NO_VIRTUALIZE(function(data)
@@ -2208,20 +2208,20 @@ function tw(obj, t, props, style, dir)
 end
 
 local C = {
-    bg0         = Color3.fromRGB(0, 0, 0),        -- Main frame background (pure black)
-    bg1         = Color3.fromRGB(5, 5, 5),        -- Header and cards background
-    bg2         = Color3.fromRGB(8, 8, 8),        -- Playable lists / list elements
-    bg3         = Color3.fromRGB(12, 12, 12),     -- Speed inputs / sliders background
-    border      = Color3.fromRGB(30, 30, 30),     -- Inner frame outlines (dark gray)
-    glassBorder = Color3.fromRGB(30, 50, 90),     -- Outer glow/border (blue tinted)
-    text        = Color3.fromRGB(255, 255, 255),  -- White body text
-    text2       = Color3.fromRGB(200, 200, 200),  -- Light gray text
-    text3       = Color3.fromRGB(100, 100, 100),  -- Dim gray text
-    accent      = Color3.fromRGB(0, 140, 255),    -- Main accent (blue)
-    bg4         = Color3.fromRGB(10, 10, 10),     -- Toggle backgrounds
-    red         = Color3.fromRGB(255, 50, 50),    -- Close dot
-    yellow      = Color3.fromRGB(0, 170, 255),    -- Minimize dot / Favs (light blue)
-    green       = Color3.fromRGB(0, 200, 255),    -- Success / Active (cyan-blue)
+    bg0         = Color3.fromRGB(10, 10, 14),     -- Main frame background (deep slate)
+    bg1         = Color3.fromRGB(18, 18, 24),     -- Header and cards background
+    bg2         = Color3.fromRGB(26, 26, 34),     -- Playable lists / list elements
+    bg3         = Color3.fromRGB(34, 34, 44),     -- Speed inputs / sliders background
+    border      = Color3.fromRGB(50, 50, 65),     -- Inner frame outlines
+    glassBorder = Color3.fromRGB(60, 80, 140),    -- Outer glow/border (soft indigo)
+    text        = Color3.fromRGB(245, 245, 250),  -- White body text
+    text2       = Color3.fromRGB(180, 180, 200),  -- Light gray text
+    text3       = Color3.fromRGB(110, 110, 130),  -- Dim gray text
+    accent      = Color3.fromRGB(88, 101, 242),   -- Main accent (modern indigo)
+    bg4         = Color3.fromRGB(20, 20, 28),     -- Toggle backgrounds
+    red         = Color3.fromRGB(237, 66, 69),    -- Close dot
+    yellow      = Color3.fromRGB(88, 101, 242),   -- Minimize dot / Favs (indigo)
+    green       = Color3.fromRGB(59, 165, 93),    -- Success / Active (green)
     white       = Color3.fromRGB(255, 255, 255),  -- Pure white
 }
 
@@ -2743,10 +2743,10 @@ minimizeBtn.MouseButton1Click:Connect(function()
     local ti = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
     if isMinimized then
         body.Visible = false
-        TweenService:Create(Menu, ti, {Size = MINI_SIZE, Position = _HaloTopFixedPos(Menu, MINI_SIZE.Y.Offset)}):Play()
+        TweenService:Create(Menu, ti, {Size = MINI_SIZE, Position = _TRXTopFixedPos(Menu, MINI_SIZE.Y.Offset)}):Play()
         minimizeBtn.Text = ""
     else
-        TweenService:Create(Menu, ti, {Size = FULL_SIZE, Position = _HaloTopFixedPos(Menu, FULL_SIZE.Y.Offset)}):Play()
+        TweenService:Create(Menu, ti, {Size = FULL_SIZE, Position = _TRXTopFixedPos(Menu, FULL_SIZE.Y.Offset)}):Play()
         task.delay(0.28, function() body.Visible = true end)
         minimizeBtn.Text = ""
     end
@@ -3045,7 +3045,8 @@ end
 local function UpdateCustomTabCount()
     local customBtn = TabButtons["Custom"]
     if customBtn then
-        customBtn.Text = "Custom"
+        local count = #CustomAnims
+        customBtn.Text = "Custom" .. (count > 0 and " (" .. count .. ")" or "")
     end
 end
 
@@ -4547,9 +4548,6 @@ RebuildVisible = function()
     if tab == "All" then
         for name, url in pairs(AnimationList) do
             table.insert(source, { name=name, url=url, raw=false })
-        end
-        for _, ca in ipairs(CustomAnims) do
-            table.insert(source, { name="[Custom] "..ca.name, url=ca.url, raw=ca.raw })
         end
     elseif tab == "Favs" then
         for name, _ in pairs(Favorites) do
@@ -6749,7 +6747,7 @@ local _lastAnimCheck = 0
         if not char then return end
         
         local ghostModel = Instance.new("Model")
-        ghostModel.Name = "HaloGhostTrail"
+        ghostModel.Name = "TRXGhostTrail"
         ghostModel.Parent = workspace
         
         for _, part in ipairs(char:GetDescendants()) do
@@ -6980,8 +6978,8 @@ local _lastAnimCheck = 0
 
     -- Load Friend Config
     pcall(function()
-        if readfile and isfile and isfile("HaloV2Folder/friend_listener_config.json") then
-            local data = game:GetService("HttpService"):JSONDecode(readfile("HaloV2Folder/friend_listener_config.json"))
+        if readfile and isfile and isfile("TRXReanimData/friend_listener_config.json") then
+            local data = game:GetService("HttpService"):JSONDecode(readfile("TRXReanimData/friend_listener_config.json"))
             if data then
                 _G.FriendListenerAutoExecute = data.autoExecute or false
                 if _G.FriendListenerAutoExecute then
@@ -7081,7 +7079,7 @@ local _lastAnimCheck = 0
 
     -- The draggable button itself
     local mobileBtnGui = Instance.new("ScreenGui")
-    mobileBtnGui.Name = "HaloMobileWheelBtn"
+    mobileBtnGui.Name = "TRXMobileWheelBtn"
     mobileBtnGui.ResetOnSpawn = false
     mobileBtnGui.IgnoreGuiInset = true
     mobileBtnGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
@@ -7236,7 +7234,7 @@ local _lastAnimCheck = 0
                 end
                 pcall(function()
                     for _, child in ipairs(game:GetService("SoundService"):GetChildren()) do
-                        if child.Name == "HaloEmoteSound" or child.Name == "HaloClickSound" then
+                        if child.Name == "TRXEmoteSound" or child.Name == "TRXClickSound" then
                             child:Stop(); child:Destroy()
                         end
                     end
@@ -7394,8 +7392,7 @@ end))
 do
     -- Define the Fortnite Wheel UI structure
     task.spawn(LPH_NO_VIRTUALIZE(function()
-        
-                local OriginalEmotes = {}
+        OriginalEmotes = {}
 
         local wheelPages = {}
         local CustomWheelPages = {}
@@ -7502,7 +7499,7 @@ do
                 if assetId and audioSession == session then
                     pcall(function()
                         local sound = Instance.new("Sound")
-                        sound.Name = "HaloEmoteSound"
+                        sound.Name = "TRXEmoteSound"
                         sound.SoundId = assetId
                         sound.Volume = 0
                         sound.Looped = true
@@ -7526,7 +7523,7 @@ do
                 if assetId then
                     pcall(function()
                         local sound = Instance.new("Sound")
-                        sound.Name = "HaloClickSound"
+                        sound.Name = "TRXClickSound"
                         sound.SoundId = assetId
                         sound.Volume = 0.2
                         sound.Parent = game:GetService("SoundService")
@@ -8051,7 +8048,7 @@ end
 pcall(function()
     ScreenGui.Parent = _screenGuiTarget
     if not ScreenGui.Parent then
-        warn("[Halo Reanim] Failed to parent ScreenGui to " .. tostring(_screenGuiTarget))
+        warn("[TRX Reanim] Failed to parent ScreenGui to " .. tostring(_screenGuiTarget))
         ScreenGui.Parent = PlayerGui
     end
     ScreenGui.Enabled = true
@@ -8070,19 +8067,516 @@ pcall(function()
     revHandle.Position = UDim2.new(pct, 0, 0.5, 0)
     revSpdLbl.Text = "Reverse Speed: " .. string.format("%.1f", GlobalReverseSpeed) .. "x"
 end)
+
+-- ═══════════════════════════════════════════════════════════════
+--  TRX TAG SYSTEM v2.1 (Embedded)
+--  Blue self-tag (stays on during reanimation)
+--  Red remote warning tag — only applied to players you specify
+-- ═══════════════════════════════════════════════════════════════
+
+-- ═══ CONFIG: ADD BAD PEOPLE HERE ═══
+-- Put the EXACT Roblox Name or DisplayName of anyone you want tagged.
+-- You can add as many as you want. Remove the example when ready.
+local BAD_PEOPLE = {
+    "sstormykenziee",
+    -- Add more names here like: "BadPerson123",
+}
+
+-- ═══ SELF TAG CONFIG (Blue TRX USER) ═══
+local SELF_TAG = {
+    TAG_TEXT = "TRX USER",
+    SHOW_AT_SIGN = true,
+    BADGE_COLOR = Color3.fromRGB(30, 100, 255),
+    TEXT_COLOR = Color3.fromRGB(255, 255, 255),
+    GLOW_COLOR = Color3.fromRGB(80, 170, 255),
+    SUBTEXT_COLOR = Color3.fromRGB(200, 230, 255),
+    FONT = Enum.Font.GothamBold,
+    SIZE = UDim2.new(0, 180, 0, 50),
+    OFFSET = Vector3.new(0, 1.6, 0),
+}
+
+-- ═══ REMOTE WARNING TAG CONFIG (Red Alert) ═══
+local REMOTE_TAG = {
+    TAG_TEXT = "ONLINE PREDATOR ALERT!",
+    BADGE_COLOR = Color3.fromRGB(200, 0, 0),
+    TEXT_COLOR = Color3.fromRGB(255, 255, 255),
+    GLOW_COLOR = Color3.fromRGB(255, 50, 50),
+    SUBTEXT_COLOR = Color3.fromRGB(255, 150, 150),
+    FONT = Enum.Font.GothamBold,
+    SIZE = UDim2.new(0, 260, 0, 56),
+    OFFSET = Vector3.new(0, 1.6, 0),
+}
+
+local _tagBusy = false
+local _remoteTagActive = true
+local _remotePlayerData = {} -- [Player] = {conns = {}, instances = {}}
+
+-- ═══ HELPERS ═══
+local function cleanupTagsOnChar(char, tagNames)
+    if not char then return end
+    for _, c in ipairs(char:GetDescendants()) do
+        for _, tagName in ipairs(tagNames) do
+            if c.Name == tagName then
+                pcall(function() c:Destroy() end)
+                break
+            end
+        end
+    end
+end
+
+local function isBadPerson(player)
+    if player == plr then return false end
+    for _, name in ipairs(BAD_PEOPLE) do
+        if player.Name == name or player.DisplayName == name then
+            return true
+        end
+    end
+    return false
+end
+
+-- ═══ CREATE SELF TAG (Blue) ═══
+local function createSelfTag(char)
+    if _tagBusy then return end
+    if not char then return end
+    _tagBusy = true
+
+    cleanupTagsOnChar(char, {"TRXUserTag", "TRXTagBillboard"})
+
+    local head = char:WaitForChild("Head", 5)
+    if not head then _tagBusy = false return end
+
+    local bb = Instance.new("BillboardGui")
+    bb.Name = "TRXTagBillboard"
+    bb.Adornee = head
+    bb.Size = SELF_TAG.SIZE
+    bb.StudsOffset = SELF_TAG.OFFSET
+    bb.AlwaysOnTop = true
+    bb.LightInfluence = 0
+    bb.Parent = head
+
+    local frame = Instance.new("Frame")
+    frame.Name = "TRXUserTag"
+    frame.Size = UDim2.new(1, 0, 1, 0)
+    frame.BackgroundColor3 = SELF_TAG.BADGE_COLOR
+    frame.BackgroundTransparency = 0.15
+    frame.BorderSizePixel = 0
+    frame.Parent = bb
+    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
+
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = SELF_TAG.GLOW_COLOR
+    stroke.Thickness = 1.5
+    stroke.Transparency = 0.3
+    stroke.Parent = frame
+
+    local gradient = Instance.new("UIGradient")
+    gradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 100, 255)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(10, 50, 180))
+    })
+    gradient.Rotation = 90
+    gradient.Parent = frame
+
+    local iconFrame = Instance.new("Frame")
+    iconFrame.Size = UDim2.new(0, 32, 0, 32)
+    iconFrame.Position = UDim2.new(0, 6, 0.5, 0)
+    iconFrame.AnchorPoint = Vector2.new(0, 0.5)
+    iconFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    iconFrame.BackgroundTransparency = 0.9
+    iconFrame.BorderSizePixel = 0
+    iconFrame.Parent = frame
+    Instance.new("UICorner", iconFrame).CornerRadius = UDim.new(1, 0)
+
+    local iconText = Instance.new("TextLabel")
+    iconText.Size = UDim2.new(1, 0, 1, 0)
+    iconText.BackgroundTransparency = 1
+    iconText.Text = "⚡"
+    iconText.TextColor3 = SELF_TAG.TEXT_COLOR
+    iconText.TextSize = 16
+    iconText.Font = Enum.Font.GothamBold
+    iconText.Parent = iconFrame
+
+    local tagLabel = Instance.new("TextLabel")
+    tagLabel.Size = UDim2.new(1, -48, 0, 18)
+    tagLabel.Position = UDim2.new(0, 42, 0, 4)
+    tagLabel.BackgroundTransparency = 1
+    tagLabel.Text = SELF_TAG.TAG_TEXT
+    tagLabel.TextColor3 = SELF_TAG.TEXT_COLOR
+    tagLabel.TextSize = 13
+    tagLabel.Font = SELF_TAG.FONT
+    tagLabel.TextXAlignment = Enum.TextXAlignment.Left
+    tagLabel.Parent = frame
+
+    local userText = (SELF_TAG.SHOW_AT_SIGN and "@" or "") .. plr.Name
+    local userLabel = Instance.new("TextLabel")
+    userLabel.Size = UDim2.new(1, -48, 0, 14)
+    userLabel.Position = UDim2.new(0, 42, 0, 24)
+    userLabel.BackgroundTransparency = 1
+    userLabel.Text = userText
+    userLabel.TextColor3 = SELF_TAG.SUBTEXT_COLOR
+    userLabel.TextSize = 10
+    userLabel.Font = Enum.Font.Gotham
+    userLabel.TextXAlignment = Enum.TextXAlignment.Left
+    userLabel.Parent = frame
+
+    local shadow = Instance.new("ImageLabel")
+    shadow.Name = "Shadow"
+    shadow.Parent = bb
+    shadow.BackgroundTransparency = 1
+    shadow.Image = "rbxassetid://131604521937076"
+    shadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
+    shadow.ImageTransparency = 0.6
+    shadow.ScaleType = Enum.ScaleType.Slice
+    shadow.SliceCenter = Rect.new(50, 50, 50, 50)
+    shadow.Size = UDim2.new(1, 20, 1, 20)
+    shadow.Position = UDim2.new(0.5, 0, 0.5, 0)
+    shadow.AnchorPoint = Vector2.new(0.5, 0.5)
+    shadow.ZIndex = -1
+
+    frame.Size = UDim2.new(0, 0, 1, 0)
+    TweenService:Create(frame, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+        Size = UDim2.new(1, 0, 1, 0)
+    }):Play()
+
+    local bobConn
+    local startOffset = SELF_TAG.OFFSET
+    local t = 0
+    bobConn = RunService.RenderStepped:Connect(function(dt)
+        if not bb or not bb.Parent then
+            if bobConn then bobConn:Disconnect() end
+            return
+        end
+        t = t + dt
+        bb.StudsOffset = startOffset + Vector3.new(0, math.sin(t * 2) * 0.08, 0)
+    end)
+
+    _tagBusy = false
+end
+
+-- ═══ CREATE REMOTE WARNING TAG (Red) ═══
+local function createRemoteTag(char, targetPlayer)
+    if not char or not targetPlayer then return end
+    cleanupTagsOnChar(char, {"TRXWarningTag", "TRXWarningBillboard"})
+
+    local head = char:WaitForChild("Head", 5)
+    if not head then return end
+
+    local bb = Instance.new("BillboardGui")
+    bb.Name = "TRXWarningBillboard"
+    bb.Adornee = head
+    bb.Size = REMOTE_TAG.SIZE
+    bb.StudsOffset = REMOTE_TAG.OFFSET
+    bb.AlwaysOnTop = true
+    bb.LightInfluence = 0
+    bb.Parent = head
+
+    local frame = Instance.new("Frame")
+    frame.Name = "TRXWarningTag"
+    frame.Size = UDim2.new(1, 0, 1, 0)
+    frame.BackgroundColor3 = REMOTE_TAG.BADGE_COLOR
+    frame.BackgroundTransparency = 0.05
+    frame.BorderSizePixel = 0
+    frame.Parent = bb
+    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
+
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = REMOTE_TAG.GLOW_COLOR
+    stroke.Thickness = 2.5
+    stroke.Transparency = 0.1
+    stroke.Parent = frame
+
+    local gradient = Instance.new("UIGradient")
+    gradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 0, 0)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(130, 0, 0))
+    })
+    gradient.Rotation = 90
+    gradient.Parent = frame
+
+    local iconFrame = Instance.new("Frame")
+    iconFrame.Size = UDim2.new(0, 36, 0, 36)
+    iconFrame.Position = UDim2.new(0, 8, 0.5, 0)
+    iconFrame.AnchorPoint = Vector2.new(0, 0.5)
+    iconFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    iconFrame.BackgroundTransparency = 0.8
+    iconFrame.BorderSizePixel = 0
+    iconFrame.Parent = frame
+    Instance.new("UICorner", iconFrame).CornerRadius = UDim.new(1, 0)
+
+    local iconText = Instance.new("TextLabel")
+    iconText.Size = UDim2.new(1, 0, 1, 0)
+    iconText.BackgroundTransparency = 1
+    iconText.Text = "⚠"
+    iconText.TextColor3 = Color3.fromRGB(255, 255, 0)
+    iconText.TextSize = 22
+    iconText.Font = Enum.Font.GothamBold
+    iconText.Parent = iconFrame
+
+    local tagLabel = Instance.new("TextLabel")
+    tagLabel.Size = UDim2.new(1, -56, 0, 22)
+    tagLabel.Position = UDim2.new(0, 50, 0, 3)
+    tagLabel.BackgroundTransparency = 1
+    tagLabel.Text = REMOTE_TAG.TAG_TEXT
+    tagLabel.TextColor3 = REMOTE_TAG.TEXT_COLOR
+    tagLabel.TextSize = 13
+    tagLabel.Font = REMOTE_TAG.FONT
+    tagLabel.TextXAlignment = Enum.TextXAlignment.Left
+    tagLabel.Parent = frame
+
+    local userText = "@" .. targetPlayer.Name
+    local userLabel = Instance.new("TextLabel")
+    userLabel.Size = UDim2.new(1, -56, 0, 16)
+    userLabel.Position = UDim2.new(0, 50, 0, 28)
+    userLabel.BackgroundTransparency = 1
+    userLabel.Text = userText
+    userLabel.TextColor3 = REMOTE_TAG.SUBTEXT_COLOR
+    userLabel.TextSize = 11
+    userLabel.Font = Enum.Font.Gotham
+    userLabel.TextXAlignment = Enum.TextXAlignment.Left
+    userLabel.Parent = frame
+
+    -- CLICK TO TELEPORT BUTTON (invisible overlay)
+    local tpBtn = Instance.new("TextButton")
+    tpBtn.Name = "TRXTPButton"
+    tpBtn.Size = UDim2.new(1, 0, 1, 0)
+    tpBtn.BackgroundTransparency = 1
+    tpBtn.Text = ""
+    tpBtn.ZIndex = 10
+    tpBtn.Parent = frame
+
+    tpBtn.MouseButton1Click:Connect(function()
+        local myChar = plr.Character
+        local myHRP = myChar and myChar:FindFirstChild("HumanoidRootPart")
+        local theirHRP = char and char:FindFirstChild("HumanoidRootPart")
+        if myHRP and theirHRP then
+            myHRP.CFrame = theirHRP.CFrame * CFrame.new(0, 0, 3)
+            Notify("Teleported", "Warped to " .. targetPlayer.Name, 2)
+        end
+    end)
+
+    local shadow = Instance.new("ImageLabel")
+    shadow.Name = "Shadow"
+    shadow.Parent = bb
+    shadow.BackgroundTransparency = 1
+    shadow.Image = "rbxassetid://131604521937076"
+    shadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
+    shadow.ImageTransparency = 0.5
+    shadow.ScaleType = Enum.ScaleType.Slice
+    shadow.SliceCenter = Rect.new(50, 50, 50, 50)
+    shadow.Size = UDim2.new(1, 24, 1, 24)
+    shadow.Position = UDim2.new(0.5, 0, 0.5, 0)
+    shadow.AnchorPoint = Vector2.new(0.5, 0.5)
+    shadow.ZIndex = -1
+
+    frame.Size = UDim2.new(0, 0, 1, 0)
+    TweenService:Create(frame, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+        Size = UDim2.new(1, 0, 1, 0)
+    }):Play()
+
+    local pulseConn
+    local t = 0
+    pulseConn = RunService.RenderStepped:Connect(function(dt)
+        if not bb or not bb.Parent then
+            if pulseConn then pulseConn:Disconnect() end
+            return
+        end
+        t = t + dt
+        local pulse = 0.1 + math.sin(t * 3) * 0.15
+        stroke.Transparency = math.clamp(pulse, 0, 0.5)
+    end)
+
+    if not _remotePlayerData[targetPlayer] then
+        _remotePlayerData[targetPlayer] = {instances = {}, conns = {}}
+    end
+    table.insert(_remotePlayerData[targetPlayer].instances, bb)
+end
+
+-- ═══ SELF TAG LOGIC ═══
+local function onSelfCharacter(char)
+    cleanupTagsOnChar(char, {"TRXUserTag", "TRXTagBillboard"})
+    task.wait(0.5)
+    createSelfTag(char)
+end
+
+if plr.Character then
+    task.spawn(function() onSelfCharacter(plr.Character) end)
+end
+plr.CharacterAdded:Connect(function(char)
+    task.spawn(function() onSelfCharacter(char) end)
+end)
+
+-- ═══ REMOTE TAG LOGIC ═══
+local function clearRemoteTagsForPlayer(targetPlayer)
+    local data = _remotePlayerData[targetPlayer]
+    if not data then return end
+    for _, inst in ipairs(data.instances) do
+        pcall(function() inst:Destroy() end)
+    end
+    for _, c in ipairs(data.conns) do
+        pcall(function() c:Disconnect() end)
+    end
+    _remotePlayerData[targetPlayer] = nil
+end
+
+local function clearAllRemoteTags()
+    local players = {}
+    for player, _ in pairs(_remotePlayerData) do
+        table.insert(players, player)
+    end
+    for _, player in ipairs(players) do
+        clearRemoteTagsForPlayer(player)
+    end
+end
+
+local function applyRemoteTagToPlayer(targetPlayer)
+    if not targetPlayer then return end
+    clearRemoteTagsForPlayer(targetPlayer)
+
+    local data = {instances = {}, conns = {}}
+    _remotePlayerData[targetPlayer] = data
+
+    local function onTargetChar(char)
+        if not _remoteTagActive then return end
+        task.spawn(function()
+            task.wait(0.5)
+            if targetPlayer.Character == char and _remoteTagActive then
+                createRemoteTag(char, targetPlayer)
+            end
+        end)
+    end
+
+    if targetPlayer.Character then
+        onTargetChar(targetPlayer.Character)
+    end
+
+    local conn = targetPlayer.CharacterAdded:Connect(onTargetChar)
+    table.insert(data.conns, conn)
+end
+
+local function scanAndTagBadPeople()
+    if not _remoteTagActive then return end
+    for _, p in ipairs(Players:GetPlayers()) do
+        if isBadPerson(p) then
+            applyRemoteTagToPlayer(p)
+        end
+    end
+end
+
+local _remoteTagConns = nil
+local function startRemoteTagSystem()
+    scanAndTagBadPeople()
+
+    if not _remoteTagConns then
+        _remoteTagConns = {}
+        local conn = Players.PlayerAdded:Connect(function(p)
+            if _remoteTagActive and isBadPerson(p) then
+                applyRemoteTagToPlayer(p)
+                Notify("Remote Tag", "Warning tag applied to " .. p.Name, 3)
+            end
+        end)
+        table.insert(_remoteTagConns, conn)
+
+        local conn2 = Players.PlayerRemoving:Connect(function(p)
+            clearRemoteTagsForPlayer(p)
+        end)
+        table.insert(_remoteTagConns, conn2)
+    end
+end
+
+-- ═══ GLOBAL CONTROLS ═══
+_G._TRXRemoveWarningTag = function()
+    _remoteTagActive = false
+    clearAllRemoteTags()
+    Notify("Remote Tag", "All warning tags removed", 3)
+end
+
+_G._TRXApplyWarningTag = function()
+    _remoteTagActive = true
+    clearAllRemoteTags()
+    startRemoteTagSystem()
+end
+
+-- Auto-start remote tag on load
+startRemoteTagSystem()
+
+-- Reanim-safe self tag: detect character swaps and re-apply cleanly
+local _lastSelfChar = nil
+RunService.RenderStepped:Connect(function()
+    local char = plr.Character
+    if char and char ~= _lastSelfChar then
+        _lastSelfChar = char
+        cleanupTagsOnChar(char, {"TRXUserTag", "TRXTagBillboard"})
+        task.delay(0.6, function()
+            if plr.Character == char then
+                createSelfTag(char)
+            end
+        end)
+    end
+end)
+
+print("[TRX Tag System] Loaded! Blue self-tag + Remote warning tags active.")
+print("[TRX Tag System] Bad people list has " .. #BAD_PEOPLE .. " name(s). Edit BAD_PEOPLE to add more.")
+
+
 Notify("TRX Reanimation loaded!", 2.5)
 
+-- Onyx V2 Animation Loader with local caching
 task.spawn(function()
-    local ok, r = pcall(function()
-        return loadstring(game:HttpGet(CONFIG.ANIMATIONS_URL))()
-    end)
-    if ok and type(r) == "table" and next(r) ~= nil then
-        for name, url in pairs(r) do
-            AnimationList[name] = url
+    local onyxLoaded = 0
+    local onyxCached = false
+
+    -- Try loading from local cache first (so it works offline after first run)
+    local cachePath = CONFIG.FOLDER .. "/OnyxAnimIndex.cache"
+    local cachedOk, cachedRaw = pcall(function()
+        if isfile and isfile(cachePath) then
+            return readfile(cachePath)
         end
+        return nil
+    end)
+
+    if cachedOk and cachedRaw and cachedRaw ~= "" then
+        local ok, data = pcall(function() return loadstring(cachedRaw)() end)
+        if ok and type(data) == "table" then
+            for name, url in pairs(data) do
+                local cleanName = name:gsub("%.lua$", "")
+                AnimationList[cleanName] = url
+                onyxLoaded = onyxLoaded + 1
+            end
+            onyxCached = true
+        end
+    end
+
+    -- If no cache, fetch from Onyx server
+    if onyxLoaded == 0 and CONFIG.ANIMATIONS_URL ~= "" then
+        local ok, r = pcall(function()
+            return loadstring(game:HttpGet(CONFIG.ANIMATIONS_URL, true))()
+        end)
+        if ok and type(r) == "table" and next(r) ~= nil then
+            -- Save raw cache for offline use
+            pcall(function()
+                local encode = "return {\n"
+                local items = {}
+                for name, url in pairs(r) do
+                    table.insert(items, '    ["' .. name .. '"]' .. ' = "' .. url .. '",')
+                end
+                table.sort(items)
+                encode = encode .. table.concat(items, "\n") .. "\n}"
+                writefile(cachePath, encode)
+            end)
+
+            for name, url in pairs(r) do
+                local cleanName = name:gsub("%.lua$", "")
+                AnimationList[cleanName] = url
+                onyxLoaded = onyxLoaded + 1
+            end
+        end
+    end
+
+    if onyxLoaded > 0 then
         if State.currentTab == "All" or State.currentTab == "Favs" then
             pcall(RebuildVisible)
         end
+        Notify("Onyx V2: " .. tostring(onyxLoaded) .. " dances loaded" .. (onyxCached and " (cached)" or ""), 3)
     end
 end)
 
@@ -8119,21 +8613,21 @@ function _runEmbeddedReanimation()
     end
     _haloReanimHasRun = true
     if not _haloReanimCode then
-        warn("[Halo Reanim] Code is nil - already loaded?")
+        warn("[TRX Reanim] Code is nil - already loaded?")
         return
     end
     local ok, fn = pcall(loadstring, _haloReanimCode)
     if not ok then
-        warn("[Halo Reanim] loadstring failed: " .. tostring(fn))
+        warn("[TRX Reanim] loadstring failed: " .. tostring(fn))
         return
     end
     if not fn then
-        warn("[Halo Reanim] loadstring returned nil")
+        warn("[TRX Reanim] loadstring returned nil")
         return
     end
     local ok2, err = pcall(fn)
     if not ok2 then
-        warn("[Halo Reanim] execution failed: " .. tostring(err))
+        warn("[TRX Reanim] execution failed: " .. tostring(err))
     end
     _haloReanimCode = nil
     -- Wait a moment for the ScreenGui to be parented
