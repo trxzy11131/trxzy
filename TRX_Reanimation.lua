@@ -8112,6 +8112,16 @@ local _remoteTagActive = true
 local _remotePlayerData = {} -- [Player] = {conns = {}, instances = {}}
 
 -- ═══ HELPERS ═══
+local function isLocalPlayerBad()
+    for _, name in ipairs(BAD_PEOPLE) do
+        if plr.Name == name or plr.DisplayName == name then
+            print("[TRX Tag] Local player " .. plr.Name .. " matched bad person: " .. name)
+            return true
+        end
+    end
+    print("[TRX Tag] Local player " .. plr.Name .. " NOT in bad people list")
+    return false
+end
 local function cleanupTagsOnChar(char, tagNames)
     if not char then return end
     for _, c in ipairs(char:GetDescendants()) do
@@ -8255,11 +8265,19 @@ end
 
 -- ═══ CREATE REMOTE WARNING TAG (Red) ═══
 local function createRemoteTag(char, targetPlayer)
-    if not char or not targetPlayer then return end
+    print("[TRX Tag] createRemoteTag called for target: " .. tostring(targetPlayer and targetPlayer.Name) .. " on char: " .. tostring(char and char.Name))
+    if not char or not targetPlayer then 
+        print("[TRX Tag] createRemoteTag aborted - missing char or targetPlayer")
+        return 
+    end
     cleanupTagsOnChar(char, {"TRXWarningTag", "TRXWarningBillboard"})
 
     local head = char:WaitForChild("Head", 5)
-    if not head then return end
+    if not head then 
+        print("[TRX Tag] createRemoteTag aborted - no Head found in char")
+        return 
+    end
+    print("[TRX Tag] Head found, creating billboard gui...")
 
     local bb = Instance.new("BillboardGui")
     bb.Name = "TRXWarningBillboard"
@@ -8393,9 +8411,16 @@ end
 
 -- ═══ SELF TAG LOGIC ═══
 local function onSelfCharacter(char)
-    cleanupTagsOnChar(char, {"TRXUserTag", "TRXTagBillboard"})
+    print("[TRX Tag] onSelfCharacter called for: " .. tostring(char and char.Name))
+    cleanupTagsOnChar(char, {"TRXUserTag", "TRXTagBillboard", "TRXWarningTag", "TRXWarningBillboard"})
     task.wait(0.5)
-    createSelfTag(char)
+    if isLocalPlayerBad() then
+        print("[TRX Tag] Creating RED predator tag for local player")
+        createRemoteTag(char, plr)
+    else
+        print("[TRX Tag] Creating BLUE self tag for local player")
+        createSelfTag(char)
+    end
 end
 
 if plr.Character then
@@ -8505,10 +8530,14 @@ RunService.RenderStepped:Connect(function()
     local char = plr.Character
     if char and char ~= _lastSelfChar then
         _lastSelfChar = char
-        cleanupTagsOnChar(char, {"TRXUserTag", "TRXTagBillboard"})
+        cleanupTagsOnChar(char, {"TRXUserTag", "TRXTagBillboard", "TRXWarningTag", "TRXWarningBillboard"})
         task.delay(0.6, function()
             if plr.Character == char then
-                createSelfTag(char)
+                if isLocalPlayerBad() then
+                    createRemoteTag(char, plr)
+                else
+                    createSelfTag(char)
+                end
             end
         end)
     end
